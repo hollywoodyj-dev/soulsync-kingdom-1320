@@ -2,37 +2,34 @@
 
 Script: `tools/interaction_regression.py` (Playwright, selftest copy, 390×844, reduced motion).
 
-This replaces the lost full-flow script at smoke+happy-path depth. Device Safari / Android Chrome remain open.
+This replaces the lost full-flow script. Device Safari / Android Chrome remain open.
 
-## Covered now
+## Covered now (Acceptance Review §3.4 local P0)
 
 | Flow | Assertion |
 |---|---|
-| Intro skip → dream already complete → gate skip ×3 → door `1320` → sample birth | Map reached |
+| About modal | `#shell.inert`, focus in modal, Tab trapped, Escape restores |
+| Catch 4 dream lights (not skip) | `dreamNext` appears |
+| Gate skip ×3 | Door keypad |
+| Wrong PIN `0000` then `1320` | Error then birth screen |
+| Sample birth | Map reached |
+| Map | Visible controls ≥44px; walker vs labels; no horizontal overflow |
 | Leave unfinished S1 | Node not marked visited |
-| Complete S1 / S3 / S2 / S0 (minimal choices) | All four nodes `done` |
+| Complete S1 / S3 / S2 / S0 | All four nodes `done` |
 | Redo S1 then leave | Completed result restored; gather available |
-| Gather lamps → blueprint | Four blueprint cards |
-| Empty bottle → preview | Error shown |
-| Fill experience → preview | Publish disabled until consent |
-| Regen alias | Consent revoked, publish disabled |
-| Consent + publish → skip meteor → wall | Wall reached |
-| Public payload | Exactly 6 keys; birth not included |
-| Touch targets on map | `min(width,height) ≥ 44` |
-| Walker vs node labels | No overlap > 2px |
+| Gather → blueprint | Four cards; no overflow |
+| Empty / snippet-only / URL in bottle | Preview blocked |
+| Preview consent | Publish disabled until consent; regen revokes it |
+| Publish → meteor → wall | Wall reached; no overflow |
+| Sample-star gesture | `light` selected |
+| Public payload | Exactly 6 keys; birth and gate answers stay private |
 
-## Still to add
+## Still open (not local P0)
 
-- Full dream catch of 4 lights (not skipPro).
-- Invalid door code, then correct `1320`.
 - Manual birth date including leap day (needs Nova fixture before official asserts).
-- Focus trap / Tab order / `#shell.inert` while modal open.
-- Horizontal overflow at 360 / 390 / 430 / 1280 (smoke already covers load; need mid-flow).
-- Contact/URL in bottle fields blocked.
-- Snippet-only bottle still blocked.
-- Star-wall gestures on a non-mine sample star.
-- Restart confirm.
-- Official-adapter error states once Nova schema exists: `unconnected` / `validation_failed` / `temporarily_unavailable`, no DEMO fallback.
+- Official-adapter contract tests once Nova schema exists: version, `foundation_order`, code format, totem match, timeout/error, no DEMO fallback.
+- iPhone Safari safe-area / Android Chrome.
+- Founder / Hollywood visual sign-off.
 
 ## How to run
 

@@ -115,7 +115,7 @@ See `docs/cursor/INTERACTION_REGRESSION_PLAN.md`. Happy path + bottle/consent/re
 
 | Gate | Status |
 |---|---|
-| A — Local engineering handoff | **Conditionally passed** (hashes + smoke rerun here; git baseline recorded) |
+| A — Local engineering handoff | **Passed in this Cursor environment** — see `docs/cursor/GATE_A_CLOSEOUT.md`. Not product acceptance. |
 | B — Official 1320 integration | Not passed |
 | C — Hosted Preview | Not authorized |
 | D — Production / public launch | Not authorized |

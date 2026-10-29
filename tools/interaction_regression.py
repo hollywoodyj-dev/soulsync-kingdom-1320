@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Interaction regression for the v0.2.3 selftest copy.
 
-Covers the happy path plus bottle-empty, alias-regen consent revoke,
-replay/leave restore, touch targets, and walker-vs-label overlap.
-Not a substitute for iPhone Safari / Android Chrome device tests.
+Covers the acceptance-review P0 flow: dream → gate → door → birth → four
+realms → blueprint → bottle → preview → meteor → wall, plus replay/leave,
+consent revoke, focus trap, touch targets, reduced-motion overflow, and
+sensitive-field leakage. Not a substitute for iPhone Safari / Android Chrome.
 """
 from __future__ import annotations
 
@@ -42,10 +43,18 @@ def heading(page) -> str:
     return page.locator("h1, h2").first.inner_text()
 
 
+def no_hscroll(page) -> bool:
+    return page.evaluate("document.documentElement.scrollWidth<=innerWidth+1")
+
+
 def min_touch(page) -> float:
     return page.evaluate(
         """() => {
-          const nodes = [...document.querySelectorAll('button.btn, button.opt, button.node, .pad button')];
+          const nodes = [...document.querySelectorAll('button.btn, button.opt, button.node, .pad button')]
+            .filter(el => {
+              const r = el.getBoundingClientRect();
+              return r.width > 1 && r.height > 1 && getComputedStyle(el).visibility !== 'hidden';
+            });
           if (!nodes.length) return 999;
           return Math.min(...nodes.map(el => {
             const r = el.getBoundingClientRect();
@@ -97,6 +106,16 @@ def finish_s0(page) -> None:
     wait_act(page, "scene")
 
 
+def reach_wall(page) -> None:
+    page.wait_for_timeout(400)
+    skip = page.locator('[data-act="skipMeteor"]')
+    if skip.count() and skip.first.is_visible():
+        click_act(page, "skipMeteor")
+    wait_act(page, "toWall0", timeout=4000)
+    click_act(page, "toWall0")
+    wait_act(page, "toMap")
+
+
 def main() -> int:
     if not HTML.exists():
         print("missing selftest html")
@@ -113,7 +132,26 @@ def main() -> int:
         page.goto(HTML.as_uri() + "#selftest")
         page.wait_for_timeout(300)
 
-        click_act(page, "skipPro")
+        page.locator("#aboutBtn").click()
+        chk(page.locator("#modal.on").count() == 1, "about modal opens")
+        chk(page.evaluate("document.getElementById('shell').inert === true"), "#shell.inert while modal open")
+        chk(
+            page.evaluate("document.getElementById('modal').contains(document.activeElement)"),
+            "focus starts inside modal",
+        )
+        page.keyboard.press("Tab")
+        chk(
+            page.evaluate("document.getElementById('modal').contains(document.activeElement)"),
+            "Tab stays inside modal",
+        )
+        page.keyboard.press("Escape")
+        chk(page.locator("#modal.on").count() == 0, "Escape closes modal")
+        chk(page.evaluate("document.getElementById('shell').inert === false"), "#shell.inert cleared")
+
+        click_act(page, "enter")
+        wait_act(page, "dreamTake")
+        for i in range(4):
+            click_act(page, "dreamTake", i=str(i))
         wait_act(page, "dreamNext")
         click_act(page, "dreamNext")
 
@@ -122,6 +160,17 @@ def main() -> int:
             page.locator('[data-act="gateAns"][data-v="-1"]').click()
 
         wait_act(page, "pwKey")
+        for digit in "0000":
+            click_act(page, "pwKey", v=digit)
+        page.wait_for_function(
+            "() => (document.querySelector('#pwerr')||{}).textContent.trim().length > 0",
+            timeout=4000,
+        )
+        chk(bool(page.locator("#pwerr").inner_text().strip()), "wrong PIN shows error")
+        page.wait_for_function(
+            "() => window.__ssk.getState().pw === ''",
+            timeout=4000,
+        )
         for digit in "1320":
             click_act(page, "pwKey", v=digit)
         wait_act(page, "birthSample", timeout=4000)
@@ -131,14 +180,13 @@ def main() -> int:
         chk("四境" in heading(page) or page.locator("#map").count() == 1, "reached four-realm map")
         chk(min_touch(page) >= 44, f"map controls >= 44px (min={min_touch(page):.1f})")
         chk(not walker_overlap(page), "walker does not overlap node labels")
+        chk(no_hscroll(page), "map: no horizontal overflow")
 
-        # Replay/leave: start S1, leave mid-flow, map should not mark visited.
         click_act(page, "scene", id="s1")
         wait_act(page, "pickSym")
         click_act(page, "toMap")
         wait_act(page, "scene")
-        done = page.locator("#node-s1.done").count()
-        chk(done == 0, "leaving unfinished S1 does not mark visited")
+        chk(page.locator("#node-s1.done").count() == 0, "leaving unfinished S1 does not mark visited")
 
         finishers = {"s1": finish_s1, "s3": finish_s3, "s2": finish_s2, "s0": finish_s0}
         for sid, fn in finishers.items():
@@ -146,7 +194,6 @@ def main() -> int:
             fn(page)
             chk(page.locator(f"#node-{sid}.done").count() == 1, f"{sid} marked visited")
 
-        # Redo then leave should restore completed result.
         click_act(page, "scene", id="s1")
         wait_act(page, "redo")
         click_act(page, "redo")
@@ -158,16 +205,26 @@ def main() -> int:
         click_act(page, "gather")
         wait_act(page, "toBottle", timeout=4000)
         chk("蓝图" in heading(page) or page.locator(".bp-card").count() == 4, "blueprint screen")
+        chk(no_hscroll(page), "blueprint: no horizontal overflow")
 
         click_act(page, "toBottle")
         wait_act(page, "toPreview")
         click_act(page, "toPreview")
-        err = page.locator("#berr").inner_text()
-        chk(bool(err.strip()), "empty bottle blocked preview")
+        chk(bool(page.locator("#berr").inner_text().strip()), "empty bottle blocked preview")
+
+        page.locator('input[data-bind="snip"][value="s1"]').check()
+        click_act(page, "toPreview")
+        chk(bool(page.locator("#berr").inner_text().strip()), "snippet-only bottle blocked")
+
+        page.fill("#exp", "见 https://example.com 联系我")
+        click_act(page, "toPreview")
+        chk("http" in page.locator("#berr").inner_text().lower() or "联系" in page.locator("#berr").inner_text(),
+            "contact/URL in bottle blocked")
 
         page.fill("#exp", "今夜先把灯放稳。")
         click_act(page, "toPreview")
         wait_act(page, "publish")
+        chk(no_hscroll(page), "preview: no horizontal overflow")
         chk(page.locator("#pubBtn").is_disabled(), "publish disabled before consent")
 
         page.locator("#consent").check()
@@ -177,26 +234,30 @@ def main() -> int:
 
         page.locator("#consent").check()
         click_act(page, "publish")
-        page.wait_for_timeout(400)
-        skip = page.locator('[data-act="skipMeteor"]')
-        if skip.count() and skip.first.is_visible():
-            click_act(page, "skipMeteor")
-        wait_act(page, "toWall0", timeout=4000)
-        click_act(page, "toWall0")
-        wait_act(page, "toMap")
+        reach_wall(page)
         chk("星" in heading(page) or page.locator("#wallbox").count() == 1, "star wall")
+        chk(no_hscroll(page), "wall: no horizontal overflow")
+
+        click_act(page, "wallSel", i="1")
+        wait_act(page, "gesture")
+        click_act(page, "gesture", v="light")
+        chk(page.locator('[data-act="gesture"][data-v="light"].sel').count() == 1, "sample-star gesture selected")
 
         st = page.evaluate("() => window.__ssk && window.__ssk.getState()")
         chk(bool(st), "selftest hook present")
         if st:
             payload = page.evaluate("() => window.__ssk.buildPublicStarPayload(window.__ssk.getState())")
+            keys = sorted(payload.keys())
             chk(
-                sorted(payload.keys())
-                == sorted(["alias", "experience", "insight", "wish", "blueprintSnippet", "contentWarning"]),
-                f"public payload 6 keys {sorted(payload.keys())}",
+                keys == sorted(["alias", "experience", "insight", "wish", "blueprintSnippet", "contentWarning"]),
+                f"public payload 6 keys {keys}",
             )
+            blob = str(payload)
             chk(st.get("birth") is not None, "birth stays in memory only")
             chk("birth" not in payload, "birth not in public payload")
+            chk("gate" not in payload, "gate answers not in public payload")
+            chk("1990" not in blob and "6" != blob, "sample birth digits not dumped as payload fields")
+            chk(st.get("gate") is not None, "gate answers remain private in memory")
 
         chk(not errors, f"no page errors {errors[:2]}")
         browser.close()
