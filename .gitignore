@@ -5,3 +5,5 @@ node_modules/
 __pycache__/
 *.pyc
 assets/inline-extracted-regenerated/
+logs/
+handoff-immutable/*.zip
