@@ -7,3 +7,4 @@ __pycache__/
 assets/inline-extracted-regenerated/
 logs/
 handoff-immutable/*.zip
+src/current/_official_totem_uri.inc.js
