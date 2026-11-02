@@ -1,5 +1,7 @@
 # SoulSync Kingdom 1320｜Cursor Handoff Acceptance Review v1.0
 
+> **Cursor overlay (2026-10-30, not part of the original review text):** Three records, kept separate — `docs/cursor/ENVIRONMENT_GAPS.md`. **ENV-1:** prior round, Python `playwright` module missing; **原环境未复测；Cursor 环境已解决同类依赖问题** (a Cursor install does not prove that machine was fixed). **ENV-2:** this review’s Chromium Headless Shell gap — historical finding, retained. **ENV-3:** Cursor `py -3.13` ALL PASS at `94e2f8d` for that environment only. ENV-1 and ENV-2 are runner blocks, not game-test failures. Device tests still pending.
+
 **评审日期：**2026-10-30  
 **对象：**`SoulSync_Kingdom_1320_Cursor_Handoff_v0.2.3.zip`  
 **评审类型：**实际交付包静态审查、文件完整性复核、测试执行可用性检查  

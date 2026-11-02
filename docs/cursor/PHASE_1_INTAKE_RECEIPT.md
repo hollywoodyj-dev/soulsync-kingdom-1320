@@ -14,9 +14,9 @@ This receipt is Cursor’s independent intake of `SoulSync_Kingdom_1320_Cursor_H
 | Git | 2.51.0.windows.2 |
 | Node | v24.11.0 |
 | npm | 11.6.1 |
-| Python on PATH `python` | 3.9.1 — **too old for current Playwright wheels** |
+| Python on PATH `python` | 3.9.1 — **too old for current Playwright wheels** (do not use for tests) |
 | Python used for tests | 3.13.5 via `py -3.13` |
-| Playwright | 1.64.1 + Chromium 156.0.8078.4 (`chromium-1248`) |
+| Playwright | 1.64.1 + Chromium 156.0.8078.4 (`chromium-1248`), via **`py -3.13`**. ENV-3 tests ALL PASS at `94e2f8d` **in this Cursor environment only**. ENV-1 (prior round, module missing): original machine **not retested**; Cursor solved the same class of dependency here. ENV-2 (archived review): Chromium binary missing — **historical finding retained**. See `docs/cursor/ENVIRONMENT_GAPS.md`. |
 | sha256sum | Git `usr\bin\sha256sum.exe` |
 
 `package.json` scripts still call `python3` / `sha256sum`. On this machine, run the Python 3.13 launcher and Git sha256sum directly. Do not treat `python` 3.9 as the test interpreter.
@@ -61,15 +61,17 @@ This repository did not exist in the ZIP. Cursor created it after extract.
 
 ## 4. Tests run here
 
+Results below are **ENV-3 only** (`py -3.13` on this Cursor machine at `94e2f8d`). They do not retest ENV-1 or ENV-2 and are not device verification.
+
 | Check | Result |
 |---|---|
 | `sha256sum -c SHA256SUMS.txt` | PASS (119 OK) |
-| smoke current v0.2.3 | **ALL PASS** |
-| smoke frozen v0.2.2 | **ALL PASS** |
+| smoke current v0.2.3 | **ALL PASS** (ENV-3) |
+| smoke frozen v0.2.2 | **ALL PASS** (ENV-3) |
 | `tools/guard_frozen_hashes.py` | **ALL PASS** (4 HTML hashes) |
 | `tools/guard_retracted_formulas.py` | **PASS** (no live S2/S3 formulas) |
-| `tools/interaction_regression.py` | **ALL PASS** (happy path, bottle, consent, replay, 44px, walker) |
-| iPhone Safari / Android Chrome | **not run** |
+| `tools/interaction_regression.py` | **ALL PASS** (ENV-3; Chromium, not a device) |
+| iPhone Safari / Android Chrome | **not run** — 真机验证仍待完成 |
 
 Logs (gitignored): `logs/smoke-current-v0.2.3.txt`, `logs/smoke-frozen-v0.2.2.txt`, `logs/interaction-regression.txt`.
 
@@ -102,20 +104,18 @@ From `docs/GAPS_AND_NOVA_INPUTS.md`, still required before official integration 
 
 ## 7. Regression plan
 
-See `docs/cursor/INTERACTION_REGRESSION_PLAN.md`. Happy path + bottle/consent/replay/touch/overlap are in `tools/interaction_regression.py`. Remaining: full dream catch, bad PIN, focus trap, contact-string block, wall gestures, adapter error states, real devices.
+See `docs/cursor/INTERACTION_REGRESSION_PLAN.md`. Chromium local P0 flow is in `tools/interaction_regression.py` (ALL PASS at `94e2f8d`). Still open: official adapter contract tests, leap-day vectors from Nova, iPhone Safari / Android Chrome.
 
 ## 8. Suggested next work (after this receipt)
 
-1. Keep developing only on a new copied HTML filename.
-2. Ask Nova for the gap-table inputs. No adapter change until they arrive.
-3. Extend the regression script along the remaining checklist.
-4. Do not apply for Preview until Founder approval, device tests, and visual sign-off.
+1. Check NF-1–NF-5 replies against the **locked** list `docs/cursor/NOVA_FOUNDER_REQUEST_LIST_2026-10-30.md`. Arrival of files → archive, hash, schema check, offline mock, then a written integration proposal. **Does not** by itself create HTML, add network, or edit `Adapter1320.compute()`. Game/test checkpoint remains `94e2f8d`.
+2. Do not apply for Preview until Founder approval, device tests, and visual sign-off.
 
 ## 9. Gate readout
 
 | Gate | Status |
 |---|---|
-| A — Local engineering handoff | **Passed in this Cursor environment** — see `docs/cursor/GATE_A_CLOSEOUT.md`. Not product acceptance. |
-| B — Official 1320 integration | Not passed |
+| A — Local engineering handoff | **Cursor-side P0 closed** at `94e2f8d` (Founder has not independently read evidence files). Not product acceptance. |
+| B — Official 1320 integration | **Waiting on inputs.** List **locked** as NF-1–NF-5 delivery basis: `docs/cursor/NOVA_FOUNDER_REQUEST_LIST_2026-10-30.md`. Checkpoint `94e2f8d`. |
 | C — Hosted Preview | Not authorized |
 | D — Production / public launch | Not authorized |

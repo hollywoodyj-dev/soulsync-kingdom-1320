@@ -1,12 +1,12 @@
 # Agent notes — SoulSync Kingdom 1320
 
-Read `START_HERE.md` first. Then `docs/cursor/PHASE_1_INTAKE_RECEIPT.md`.
+Read `START_HERE.md` first. Then `docs/cursor/PHASE_1_INTAKE_RECEIPT.md`. Gate B inputs: `docs/cursor/NOVA_FOUNDER_REQUEST_LIST_2026-10-30.md`. Environment gaps (do not merge): `docs/cursor/ENVIRONMENT_GAPS.md`.
 
 - Develop in a **new filename** copied from `src/current/soulsync-kingdom-1320-v0.2.3-visual-dev.html`.
 - Keep `#selftest` / `window.__ssk` only in the selftest copy.
 - Frozen baseline v0.2.2 is read-only.
 - Retracted: `S2=月＋日`, `S3=月×日`. Do not implement.
-- Do not edit `Adapter1320.compute()` until Nova schema and fixtures exist.
+- Incoming Nova/Founder files: archive, hash, schema-check, offline mock, then propose a plan. **Do not** create HTML, add network, or edit `Adapter1320.compute()` on receipt.
 - Preview / deploy / public launch are not authorized.
 
 Checks:
